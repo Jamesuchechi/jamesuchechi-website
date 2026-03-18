@@ -1,0 +1,142 @@
+---
+title: "Building a type-safe API layer with Next.js App Router"
+description: "How I structure API routes in Next.js 15 to get full type safety and clean error handling without reaching for tRPC."
+date: "2026-01-20"
+type: "tutorial"
+tags: ["nextjs", "typescript", "api", "architecture"]
+draft: false
+---
+
+One pattern I keep coming back to when building Next.js apps is a thin API layer that lives entirely in `src/lib/` and treats the `app/api/` routes as thin controllers. Here's how it works and why I like it.
+
+## The problem with fat route handlers
+
+The default Next.js route handler pattern encourages putting all your logic directly in `route.js`:
+
+```js
+// app/api/posts/route.js — the pattern to avoid
+export async function GET() {
+  const posts = await prisma.post.findMany({ orderBy: { date: 'desc' } });
+  return NextResponse.json(posts);
+}
+```
+
+This is fine for simple cases, but it quickly becomes a problem:
+- Business logic is buried inside HTTP handlers
+- Hard to test without making actual HTTP requests
+- Logic duplicates across routes
+- No clear place for validation, transformation, or authorization
+
+## The layered approach
+
+The fix is to separate three concerns into three layers:
+
+**1. Service layer** (`src/lib/posts.js`) — pure business logic, no HTTP:
+
+```js
+// src/lib/posts.js
+import { prisma } from './prisma';
+
+export async function getPosts({ limit = 20, type } = {}) {
+  return prisma.post.findMany({
+    where:   type ? { type } : undefined,
+    orderBy: { date: 'desc' },
+    take:    limit,
+  });
+}
+
+export async function getPostBySlug(slug) {
+  const post = await prisma.post.findUnique({ where: { slug } });
+  if (!post) return null;
+  return post;
+}
+```
+
+**2. Route handler** (`app/api/posts/route.js`) — thin controller:
+
+```js
+import { NextResponse } from 'next/server';
+import { getPosts }     from '@/lib/posts';
+
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const type  = searchParams.get('type') || undefined;
+  const limit = Number(searchParams.get('limit')) || 20;
+
+  try {
+    const posts = await getPosts({ limit, type });
+    return NextResponse.json(posts);
+  } catch (err) {
+    console.error('GET /api/posts', err);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  }
+}
+```
+
+**3. Server components** — call the service layer directly, skip the HTTP round trip:
+
+```js
+// app/writing/page.js — server component, calls lib directly
+import { getPosts } from '@/lib/posts';
+
+export default async function WritingPage() {
+  const posts = await getPosts({ limit: 20 });
+  // ...
+}
+```
+
+## Why this matters
+
+The third point is the key insight: **server components don't need to call your own API routes**. They have direct access to your database, your file system, your services. Making an HTTP request from a server component to your own app is unnecessary overhead.
+
+Your API routes only exist for:
+- Client components that need to fetch data after the initial render
+- External services that need to call your API
+- Webhooks
+
+For everything else, call the service layer directly.
+
+## Error handling
+
+I use a simple wrapper to standardise error responses:
+
+```js
+// src/lib/api.js
+export function apiResponse(data, status = 200) {
+  return Response.json(data, { status });
+}
+
+export function apiError(message, status = 500) {
+  return Response.json({ error: message }, { status });
+}
+
+export function withErrorHandling(handler) {
+  return async (...args) => {
+    try {
+      return await handler(...args);
+    } catch (err) {
+      console.error(err);
+      return apiError('Internal server error', 500);
+    }
+  };
+}
+```
+
+Usage:
+
+```js
+import { apiResponse, apiError, withErrorHandling } from '@/lib/api';
+import { getPostBySlug } from '@/lib/posts';
+
+export const GET = withErrorHandling(async (request, { params }) => {
+  const post = await getPostBySlug(params.slug);
+  if (!post) return apiError('Not found', 404);
+  return apiResponse(post);
+});
+```
+
+Clean, consistent, and the happy path reads without noise.
+
+---
+
+This is the structure I've settled on after a few projects. The main benefit isn't cleverness — it's that future you can find things in the right place without hunting through route handlers.

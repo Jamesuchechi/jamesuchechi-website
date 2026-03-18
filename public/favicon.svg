@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#0d0d0b"/>
+  <text
+    x="16" y="23"
+    font-family="Georgia, serif"
+    font-size="18"
+    font-weight="400"
+    fill="#f8f6f1"
+    text-anchor="middle"
+  >JU</text>
+  <circle cx="26" cy="8" r="3" fill="#c9922a"/>
+</svg>

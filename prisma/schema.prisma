@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Now page content ─────────────────────────────────────────
+model NowEntry {
+  id        String   @id @default(cuid())
+  section   String   // "building" | "learning" | "reading"
+  content   String   @db.Text
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+// ── Bookshelf ─────────────────────────────────────────────────
+model Book {
+  id        String   @id @default(cuid())
+  title     String
+  author    String
+  coverUrl  String?
+  link      String?
+  status    String   @default("reading") // "reading" | "read" | "want"
+  rating    Int?     // 1-5, null if unread
+  notes     String?  @db.Text
+  finishedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Contact messages ──────────────────────────────────────────
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ── Analytics (simple view counter) ──────────────────────────
+model PageView {
+  id        String   @id @default(cuid())
+  slug      String
+  section   String   // "writing" | "garden" | "page"
+  month     String   // "YYYY-MM"
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, month])
+}

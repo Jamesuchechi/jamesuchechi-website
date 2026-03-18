@@ -1,0 +1,49 @@
+---
+title: "TIL: PostgreSQL's EXPLAIN ANALYZE is more useful than I thought"
+description: "How I went from cargo-culting indexes to actually understanding query plans."
+date: "2026-02-14"
+type: "til"
+tags: ["postgresql", "databases", "performance"]
+draft: false
+---
+
+I've been adding indexes to Postgres tables for years based on instinct — foreign keys, columns in WHERE clauses, that kind of thing. Today I actually sat down with `EXPLAIN ANALYZE` and learned it tells you far more than I was extracting from it.
+
+## The key numbers
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM posts
+WHERE author_id = 42
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+The output gives you:
+- **actual time** — wall-clock milliseconds, not estimated
+- **rows** — actual vs planner estimate (big divergence = stale statistics)
+- **loops** — how many times that node executed
+- **Seq Scan vs Index Scan** — the smoking gun
+
+## What I was missing
+
+The `loops` column is the one I always ignored. If you see:
+
+```
+Seq Scan on posts (cost=0.00..1842.00 rows=18420 width=89)
+                  (actual time=0.019..24.3 rows=18420 loops=1)
+```
+
+Fine, one sequential scan. But nested inside a join:
+
+```
+loops=842
+```
+
+That sequential scan is running 842 times. Suddenly the 24ms becomes 20 *seconds*.
+
+## The fix
+
+Run `ANALYZE tablename;` to refresh statistics when the planner estimates look wildly off from actuals. Then check if a composite index on `(author_id, created_at DESC)` makes sense for your most common query patterns.
+
+Small thing, but it changed how I read query plans.

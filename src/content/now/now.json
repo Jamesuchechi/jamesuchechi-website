@@ -1,0 +1,38 @@
+{
+  "updatedAt": "2026-03-18",
+  "building": [
+    {
+      "title": "Personal site v1",
+      "description": "This site, actually. Building it in public — Next.js, MDX, Postgres.",
+      "link": null,
+      "status": "active"
+    },
+    {
+      "title": "Data pipeline toolkit",
+      "description": "A set of reusable Python utilities for ETL pipelines I keep rebuilding at work. Packaging them properly.",
+      "link": null,
+      "status": "active"
+    }
+  ],
+  "learning": [
+    "Rust — working through the book, slowly",
+    "Advanced PostgreSQL internals — MVCC, vacuum, replication",
+    "Systems design patterns for high-traffic APIs"
+  ],
+  "reading": [
+    {
+      "title": "The Pragmatic Programmer",
+      "author": "David Thomas & Andrew Hunt",
+      "status": "reading",
+      "note": "Re-reading for the third time. Different things land each time."
+    },
+    {
+      "title": "Thinking in Systems",
+      "author": "Donella H. Meadows",
+      "status": "reading",
+      "note": "Slowly. Dense but essential."
+    }
+  ],
+  "listening": "A lot of Burna Boy, some Fela Kuti, ambient stuff when coding",
+  "location": "Kano, Nigeria"
+}

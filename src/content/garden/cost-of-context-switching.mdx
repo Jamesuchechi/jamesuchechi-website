@@ -1,0 +1,36 @@
+---
+title: "On the cost of switching contexts"
+description: "Every context switch has a hidden tax. Most of us are paying it constantly without noticing."
+date: "2026-02-28"
+stage: "budding"
+tags: ["focus", "productivity", "engineering"]
+draft: false
+---
+
+There's a concept in operating systems called **context switching** — when the CPU stops executing one process and starts executing another. It sounds free, but it isn't. There's overhead: saving state, loading new state, invalidating caches. Do it enough and the switching itself becomes the bottleneck.
+
+I think about this constantly in terms of human attention.
+
+## The cost isn't the switch, it's the rebuild
+
+When I get pulled out of deep work — a Slack message, a meeting, a "quick question" — the expensive part isn't the interruption itself. It's rebuilding the mental context afterward.
+
+Good deep work has a shape: a structure loaded into working memory. Where I was, what I was solving, what I'd tried, what the current hypothesis was. That structure takes time to build. It takes maybe 15 minutes to reconstruct after an interruption. Some days it never fully comes back.
+
+## Async as a leverage point
+
+The most underrated productivity decision I've made: moving almost everything asynchronous by default. Not because I'm antisocial, but because it protects the shape of my day.
+
+Notifications off. Email checked twice a day. Slack in batches. The time I'm "available" is clearly marked and bounded.
+
+The paradox: people who respond immediately seem more responsive. But the engineer who batches responses and does deep work in blocks ships more and better. The two things that look like opposites (responsiveness vs. depth) are often working against each other.
+
+## What I'm still figuring out
+
+This doesn't fully work for collaborative work. Pair programming, design reviews, unblocking teammates — some of this genuinely requires synchronous, present attention.
+
+The question I'm sitting with: how do you build a team culture that protects deep work time *without* creating silos where people are stuck because they can't get a quick answer?
+
+I don't have a clean answer. Probably something about explicit focus blocks that the whole team honors, plus a fast async escalation path for genuine blockers.
+
+*Budding — the core idea feels right, still working out the implications for teams.*
