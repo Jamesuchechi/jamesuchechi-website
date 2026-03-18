@@ -1,5 +1,6 @@
 import Fuse from 'fuse.js';
 import { getAllPosts } from './content';
+import { prisma }      from './prisma';
 
 /** Build the search index from all content */
 export function buildSearchIndex() {
@@ -29,7 +30,45 @@ export function buildSearchIndex() {
     { slug: 'uses',   title: 'Uses',    description: 'My tools, stack, and setup',    section: 'page', href: '/uses'   },
   ];
 
-  return [...writing, ...garden, ...pages];
+  return { writing, garden, pages };
+}
+
+/** Build the complete index including DB content */
+export async function getSearchItems() {
+  const { writing, garden, pages } = buildSearchIndex();
+
+  try {
+    const projects = (await prisma.project.findMany({ where: { published: true } })).map(p => ({
+      slug:        p.slug,
+      title:       p.title,
+      description: p.summary || '',
+      tags:        (p.techStack || []).join(' '),
+      section:     'projects',
+      href:        `/projects`,
+    }));
+
+    const albums = (await prisma.galleryAlbum.findMany({ where: { published: true } })).map(a => ({
+      slug:        a.slug,
+      title:       a.title,
+      description: a.description || '',
+      section:     'gallery',
+      href:        `/gallery/${a.slug}`,
+    }));
+
+    const bookmarks = (await prisma.bookmark.findMany({ where: { published: true } })).map(b => ({
+      slug:        b.id,
+      title:       b.title,
+      description: b.description || b.note || '',
+      tags:        (b.tags || []).join(' '),
+      section:     'bookmarks',
+      href:        `/bookmarks`,
+    }));
+
+    return [...writing, ...garden, ...pages, ...projects, ...albums, ...bookmarks];
+  } catch (err) {
+    console.error('Search index DB fetch error:', err);
+    return [...writing, ...garden, ...pages];
+  }
 }
 
 /** Run a search query, returns top 8 results */

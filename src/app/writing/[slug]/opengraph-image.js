@@ -1,5 +1,4 @@
-import { ImageResponse }   from 'next/og';
-import { getPostBySlug }   from '@/lib/content';
+import { ImageResponse } from 'next/og';
 
 export const runtime = 'nodejs';
 export const size    = { width: 1200, height: 630 };
@@ -7,11 +6,14 @@ export const contentType = 'image/png';
 
 export default async function OgImage({ params }) {
   const { slug } = await params;
-  const post     = getPostBySlug(slug, 'writing');
+  
+  // Derive a title from the slug since we can't safely use fs in this loader
+  const title = slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
-  const title       = post?.title       || 'James Uchechi';
-  const description = post?.description || 'Software Engineer & Creator';
-  const type        = post?.type        || 'writing';
+  const type        = 'WRITING';
 
   return new ImageResponse(
     (
@@ -73,20 +75,6 @@ export default async function OgImage({ params }) {
           {title}
         </div>
 
-        {/* Description */}
-        {description && (
-          <div style={{
-            fontSize:   '22px',
-            color:      'rgba(240,237,230,0.45)',
-            lineHeight: 1.5,
-            maxWidth:   '760px',
-            marginBottom: '48px',
-            fontFamily: '-apple-system, sans-serif',
-          }}>
-            {description}
-          </div>
-        )}
-
         {/* Footer */}
         <div style={{
           display:        'flex',
@@ -96,12 +84,13 @@ export default async function OgImage({ params }) {
           paddingTop:     '24px',
         }}>
           <div style={{
+            display:       'flex',
             fontSize:      '18px',
             fontWeight:    '400',
             color:         '#f0ede6',
             letterSpacing: '-0.01em',
           }}>
-            James Uchechi<span style={{ color: '#c9922a' }}>.</span>
+            <span>James Uchechi</span><span style={{ color: '#c9922a' }}>.</span>
           </div>
           <div style={{
             fontSize:      '14px',

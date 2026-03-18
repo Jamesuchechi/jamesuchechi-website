@@ -5,10 +5,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ui/ThemeProvider';
 
 const NAV_LINKS = [
-  { href: '/writing', label: 'Writing' },
-  { href: '/now',     label: 'Now'     },
-  { href: '/garden',  label: 'Garden'  },
-  { href: '/uses',    label: 'Uses'    },
+  { href: '/writing',  label: 'Writing'  },
+  { href: '/projects', label: 'Projects' },
+  { href: '/gallery',  label: 'Gallery'  },
+  { href: '/timeline', label: 'Journey'  },
+  { href: '/garden',   label: 'Garden'   },
+  { href: '/uses',     label: 'Uses'     },
 ];
 
 const SECTION_ICONS = {

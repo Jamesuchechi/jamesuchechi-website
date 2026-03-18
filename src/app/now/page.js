@@ -1,12 +1,31 @@
 import { formatDate } from '@/lib/dates';
-import nowData        from '@/content/now/now.json';
+import { prisma }    from '@/lib/prisma';
 
 export const metadata = {
   title:       'Now',
   description: "What I'm currently working on, learning, and reading.",
 };
 
-export default function NowPage() {
+export default async function NowPage() {
+  let entries = [];
+  try {
+    entries = await prisma.nowEntry.findMany({
+      orderBy: { order: 'asc' },
+    });
+  } catch (err) {
+    console.error('Now page DB fetch error:', err);
+  }
+
+  const building = entries.filter(e => e.section === 'building');
+  const learning = entries.filter(e => e.section === 'learning');
+  const reading  = entries.filter(e => e.section === 'reading');
+  const listening = entries.filter(e => e.section === 'listening');
+  
+  // Use the most recent updatedAt from any entry
+  const lastUpdated = entries.length > 0 
+    ? new Date(Math.max(...entries.map(e => e.updatedAt.getTime())))
+    : new Date();
+
   return (
     <div style={{
       maxWidth: 'var(--max-w-text)',
@@ -22,7 +41,7 @@ export default function NowPage() {
           className="display-2"
           style={{ marginBottom: 'var(--space-6)' }}
         >
-          What I'm up to
+          What I&apos;m up to
         </h1>
         <p style={{
           fontFamily:    'var(--font-mono)',
@@ -30,8 +49,8 @@ export default function NowPage() {
           color:         'var(--ink-30)',
           letterSpacing: '0.06em',
         }}>
-          Last updated {formatDate(nowData.updatedAt)} ·{' '}
-          <span style={{ color: 'var(--amber)' }}>{nowData.location}</span>
+          Last updated {formatDate(lastUpdated)} ·{' '}
+          <span style={{ color: 'var(--amber)' }}>Abuja, Nigeria</span>
         </p>
         <p style={{
           marginTop:   'var(--space-4)',
@@ -48,149 +67,107 @@ export default function NowPage() {
           >
             now page
           </a>
-          {' '}— a snapshot of what I'm currently focused on.
+          {' '}— a snapshot of what I&apos;m currently focused on.
         </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-12)' }}>
 
         {/* Building */}
-        <section>
-          <h2 style={{
-            fontFamily:    'var(--font-display)',
-            fontSize:      'var(--text-xl)',
-            fontWeight:    '400',
-            marginBottom:  'var(--space-6)',
-            paddingBottom: 'var(--space-4)',
-            borderBottom:  '1px solid var(--border)',
-            color:         'var(--ink)',
-          }}>
-            Building
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {nowData.building.map((item, i) => (
-              <div key={i}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                  <span style={{
-                    width:      '6px',
-                    height:     '6px',
-                    borderRadius: '50%',
-                    background:  item.status === 'active' ? '#22c55e' : 'var(--ink-30)',
-                    flexShrink:  0,
-                  }} />
-                  <h3 style={{ fontSize: 'var(--text-base)', fontWeight: '500', color: 'var(--ink)' }}>
-                    {item.title}
-                  </h3>
+        {building.length > 0 && (
+          <section>
+            <h2 style={{
+              fontFamily:    'var(--font-display)',
+              fontSize:      'var(--text-xl)',
+              fontWeight:    '400',
+              marginBottom:  'var(--space-6)',
+              paddingBottom: 'var(--space-4)',
+              borderBottom:  '1px solid var(--border)',
+              color:         'var(--ink)',
+            }}>
+              Building
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              {building.map((item) => (
+                <div key={item.id}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+                    <span style={{
+                      width:      '6px',
+                      height:     '6px',
+                      borderRadius: '50%',
+                      background:  '#22c55e',
+                      flexShrink:  0,
+                    }} />
+                    <h3 style={{ fontSize: 'var(--text-base)', fontWeight: '500', color: 'var(--ink)' }}>
+                      {item.content}
+                    </h3>
+                  </div>
                 </div>
-                <p style={{
-                  fontSize:   'var(--text-sm)',
-                  color:      'var(--ink-50)',
-                  lineHeight: 1.7,
-                  paddingLeft: 'var(--space-5)',
-                }}>
-                  {item.description}
-                </p>
-                {item.link && (
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display:       'inline-block',
-                      marginTop:     'var(--space-2)',
-                      marginLeft:    'var(--space-5)',
-                      fontFamily:    'var(--font-mono)',
-                      fontSize:      '11px',
-                      color:         'var(--amber)',
-                      textDecoration: 'none',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    View project ↗
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Learning */}
-        <section>
-          <h2 style={{
-            fontFamily:    'var(--font-display)',
-            fontSize:      'var(--text-xl)',
-            fontWeight:    '400',
-            marginBottom:  'var(--space-6)',
-            paddingBottom: 'var(--space-4)',
-            borderBottom:  '1px solid var(--border)',
-            color:         'var(--ink)',
-          }}>
-            Learning
-          </h2>
-          <ul style={{
-            listStyle: 'none',
-            display:   'flex',
-            flexDirection: 'column',
-            gap:       'var(--space-3)',
-          }}>
-            {nowData.learning.map((item, i) => (
-              <li key={i} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
-                <span style={{ color: 'var(--amber)', marginTop: '3px', flexShrink: 0 }}>→</span>
-                <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-80)', lineHeight: 1.7 }}>
-                  {item}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {learning.length > 0 && (
+          <section>
+            <h2 style={{
+              fontFamily:    'var(--font-display)',
+              fontSize:      'var(--text-xl)',
+              fontWeight:    '400',
+              marginBottom:  'var(--space-6)',
+              paddingBottom: 'var(--space-4)',
+              borderBottom:  '1px solid var(--border)',
+              color:         'var(--ink)',
+            }}>
+              Learning
+            </h2>
+            <ul style={{
+              listStyle: 'none',
+              display:   'flex',
+              flexDirection: 'column',
+              gap:       'var(--space-3)',
+            }}>
+              {learning.map((item) => (
+                <li key={item.id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start' }}>
+                  <span style={{ color: 'var(--amber)', marginTop: '3px', flexShrink: 0 }}>→</span>
+                  <span style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-80)', lineHeight: 1.7 }}>
+                    {item.content}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Reading */}
-        <section>
-          <h2 style={{
-            fontFamily:    'var(--font-display)',
-            fontSize:      'var(--text-xl)',
-            fontWeight:    '400',
-            marginBottom:  'var(--space-6)',
-            paddingBottom: 'var(--space-4)',
-            borderBottom:  '1px solid var(--border)',
-            color:         'var(--ink)',
-          }}>
-            Reading
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {nowData.reading.map((book, i) => (
-              <div key={i}>
-                <p style={{ fontSize: 'var(--text-base)', fontWeight: '500', color: 'var(--ink)', marginBottom: '4px' }}>
-                  {book.title}
-                </p>
-                <p style={{
-                  fontFamily:    'var(--font-mono)',
-                  fontSize:      '11px',
-                  color:         'var(--ink-30)',
-                  letterSpacing: '0.04em',
-                  marginBottom:  'var(--space-2)',
-                }}>
-                  {book.author}
-                </p>
-                {book.note && (
-                  <p style={{
-                    fontSize:   'var(--text-sm)',
-                    color:      'var(--ink-50)',
-                    fontStyle:  'italic',
-                    lineHeight: 1.6,
-                    paddingLeft: 'var(--space-4)',
-                    borderLeft: '2px solid var(--amber)',
-                  }}>
-                    {book.note}
+        {reading.length > 0 && (
+          <section>
+            <h2 style={{
+              fontFamily:    'var(--font-display)',
+              fontSize:      'var(--text-xl)',
+              fontWeight:    '400',
+              marginBottom:  'var(--space-6)',
+              paddingBottom: 'var(--space-4)',
+              borderBottom:  '1px solid var(--border)',
+              color:         'var(--ink)',
+            }}>
+              Reading
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+              {reading.map((item) => (
+                <div key={item.id}>
+                  <p style={{ fontSize: 'var(--text-base)', fontWeight: '500', color: 'var(--ink)', marginBottom: '4px' }}>
+                    {item.content}
                   </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Listening / misc */}
-        {nowData.listening && (
+        {listening.length > 0 && (
           <section>
             <h2 style={{
               fontFamily:    'var(--font-display)',
@@ -203,9 +180,13 @@ export default function NowPage() {
             }}>
               Listening
             </h2>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-50)', lineHeight: 1.7 }}>
-              {nowData.listening}
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {listening.map((item) => (
+                <p key={item.id} style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-50)', lineHeight: 1.7 }}>
+                  {item.content}
+                </p>
+              ))}
+            </div>
           </section>
         )}
       </div>
