@@ -135,17 +135,7 @@ export default function ColophonPage() {
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{
-                          fontSize:      'var(--text-sm)',
-                          fontWeight:    '500',
-                          color:         'var(--ink)',
-                          textDecoration:'underline',
-                          textDecorationColor: 'var(--border)',
-                          textUnderlineOffset: '3px',
-                          transition:    'color var(--duration-fast), text-decoration-color var(--duration-fast)',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.color = 'var(--amber)'; e.currentTarget.style.textDecorationColor = 'var(--amber)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--ink)'; e.currentTarget.style.textDecorationColor = 'var(--border)'; }}
+                        className="colophon-link"
                       >
                         {item.name} ↗
                       </a>
