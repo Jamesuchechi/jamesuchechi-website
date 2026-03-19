@@ -8,6 +8,17 @@ export function middleware(request) {
     return NextResponse.redirect(new URL('/resume.pdf', request.url));
   }
 
+  // ── Admin Authentication ──────────────────────────────────
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    const session   = request.cookies.get('admin_session')?.value;
+    const adminPass = process.env.ADMIN_PASSWORD;
+
+    // If password is set in env and user doesn't have the cookie, redirect
+    if (adminPass && session !== adminPass) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+  }
+
   // ── Security headers on all responses ───────────────────
   const response = NextResponse.next();
 

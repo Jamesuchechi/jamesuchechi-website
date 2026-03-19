@@ -9,15 +9,8 @@ export default async function AdminLayout({ children }) {
   const session     = cookieStore.get('admin_session')?.value;
   const adminPass   = process.env.ADMIN_PASSWORD;
 
-  // We cannot know the exact pathname inside a layout without searchParams,
-  // so we rely on the x-pathname header set by middleware or just return the
-  // login page bare (it has its own standalone layout).
-  // If not authenticated, middleware redirect will catch sub-routes.
-  const isAuthenticated = !adminPass || session === adminPass;
-
-  if (!isAuthenticated) {
-    redirect('/admin/login');
-  }
+  // Authentication is now handled by middleware to avoid redirect loops 
+  // into this nested layout.
 
   return <AdminShell>{children}</AdminShell>;
 }
