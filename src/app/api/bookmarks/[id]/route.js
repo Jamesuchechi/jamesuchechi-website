@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // PUT /api/bookmarks/[id]
 export async function PUT(request, { params }) {
@@ -24,6 +25,8 @@ export async function PUT(request, { params }) {
         ...(published !== undefined && { published }),
       },
     });
+    revalidatePath('/bookmarks');
+    revalidatePath('/');
     return NextResponse.json(bookmark);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -36,6 +39,8 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.bookmark.delete({ where: { id } });
+    revalidatePath('/bookmarks');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });

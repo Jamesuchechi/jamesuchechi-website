@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/timeline/[id]
 export async function GET(_, { params }) {
@@ -33,6 +34,8 @@ export async function PUT(request, { params }) {
         ...(published   !== undefined && { published }),
       },
     });
+    revalidatePath('/timeline');
+    revalidatePath('/');
     return NextResponse.json(entry);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -45,6 +48,8 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.timelineEntry.delete({ where: { id } });
+    revalidatePath('/timeline');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });

@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/uses/[id]
 export async function GET(_, { params }) {
@@ -8,7 +9,7 @@ export async function GET(_, { params }) {
     const item = await prisma.usesItem.findUnique({ where: { id } });
     if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(item);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch item' }, { status: 500 });
   }
 }
@@ -33,6 +34,8 @@ export async function PUT(request, { params }) {
       },
     });
 
+    revalidatePath('/uses');
+    revalidatePath('/');
     return NextResponse.json(item);
   } catch (err) {
     console.error('PUT /api/uses/[id] error:', err);
@@ -48,6 +51,8 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.usesItem.delete({ where: { id } });
+    revalidatePath('/uses');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') {

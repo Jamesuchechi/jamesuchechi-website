@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/timeline — all published entries, newest first
 export async function GET() {
@@ -37,6 +38,8 @@ export async function POST(request) {
         published:   published          ?? true,
       },
     });
+    revalidatePath('/timeline');
+    revalidatePath('/');
     return NextResponse.json(entry, { status: 201 });
   } catch (err) {
     console.error('POST /api/timeline error:', err);

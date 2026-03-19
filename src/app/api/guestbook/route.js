@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/guestbook — approved entries, newest first
 export async function GET() {
@@ -57,6 +58,7 @@ export async function POST(request) {
       if (Date.now() - v > RATE_WINDOW) rateLimitMap.delete(k);
     }
 
+    revalidatePath('/guestbook');
     return NextResponse.json({ ok: true, id: entry.id }, { status: 201 });
   } catch (err) {
     console.error('POST /api/guestbook error:', err);

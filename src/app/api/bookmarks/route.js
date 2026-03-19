@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/bookmarks — all published, optional ?tag= filter
 export async function GET(request) {
@@ -44,6 +45,8 @@ export async function POST(request) {
         published:   published           ?? true,
       },
     });
+    revalidatePath('/bookmarks');
+    revalidatePath('/');
     return NextResponse.json(bookmark, { status: 201 });
   } catch (err) {
     console.error('POST /api/bookmarks error:', err);

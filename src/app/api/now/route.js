@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/now — Fetch all entries ordered by section and then order
 export async function GET() {
@@ -34,6 +35,8 @@ export async function POST(request) {
         order: order || 0,
       },
     });
+    revalidatePath('/now');
+    revalidatePath('/');
     return NextResponse.json(entry, { status: 201 });
   } catch (err) {
     console.error('POST /api/now error:', err);

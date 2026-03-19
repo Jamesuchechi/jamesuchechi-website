@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // PUT /api/projects/[id] — update project
 export async function PUT(request, { params }) {
@@ -35,6 +36,10 @@ export async function PUT(request, { params }) {
       },
     });
 
+    revalidatePath('/projects');
+    revalidatePath('/');
+    revalidatePath('/projects/[slug]', 'page');
+
     return NextResponse.json(project);
   } catch (err) {
     console.error('PUT /api/projects/[id] error:', err);
@@ -50,6 +55,10 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.project.delete({ where: { id } });
+    revalidatePath('/projects');
+    revalidatePath('/');
+    revalidatePath('/projects/[slug]', 'page');
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('DELETE /api/projects/[id] error:', err);
@@ -67,7 +76,7 @@ export async function GET(_, { params }) {
     const project = await prisma.project.findUnique({ where: { id } });
     if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(project);
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch project' }, { status: 500 });
   }
 }

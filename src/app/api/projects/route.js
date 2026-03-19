@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/projects — all published projects
 export async function GET(request) {
@@ -60,6 +61,9 @@ export async function POST(request) {
         builtAt:     builtAt ? new Date(builtAt) : null,
       },
     });
+
+    revalidatePath('/projects');
+    revalidatePath('/');
 
     return NextResponse.json(project, { status: 201 });
   } catch (err) {

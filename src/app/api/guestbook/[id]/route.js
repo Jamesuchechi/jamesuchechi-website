@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // GET /api/guestbook/[id] — admin: get any entry
 export async function GET(_, { params }) {
@@ -22,6 +23,8 @@ export async function PUT(request, { params }) {
       where: { id },
       data:  { approved: Boolean(approved) },
     });
+    revalidatePath('/guestbook');
+    revalidatePath('/');
     return NextResponse.json(entry);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -34,6 +37,8 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.guestbookEntry.delete({ where: { id } });
+    revalidatePath('/guestbook');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });

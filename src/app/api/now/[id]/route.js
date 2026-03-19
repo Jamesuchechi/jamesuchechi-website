@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }   from 'next/server';
+import { prisma }         from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
 
 // PUT /api/now/[id] — Update an entry
 export async function PUT(request, { params }) {
@@ -16,6 +17,8 @@ export async function PUT(request, { params }) {
         ...(order   !== undefined && { order: parseInt(order) || 0 }),
       },
     });
+    revalidatePath('/now');
+    revalidatePath('/');
     return NextResponse.json(entry);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -28,6 +31,8 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.nowEntry.delete({ where: { id } });
+    revalidatePath('/now');
+    revalidatePath('/');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
