@@ -14,6 +14,7 @@ export default async function WritingPage() {
   const essays    = posts.filter(p => p.type === 'essay');
   const tutorials = posts.filter(p => p.type === 'tutorial');
   const tils      = posts.filter(p => p.type === 'til');
+  const others    = posts.filter(p => !['essay', 'tutorial', 'til'].includes(p.type));
 
   // Minimal data for heatmap (no content body needed)
   const heatmapData = posts.map(p => ({ date: p.date, title: p.title, slug: p.slug }));
@@ -86,6 +87,18 @@ export default async function WritingPage() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                 {tils.map(post => <PostCard key={post.slug} post={post} variant="writing" />)}
+              </div>
+            </section>
+          )}
+
+          {others.length > 0 && (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-4)', borderBottom: '1px solid var(--border)' }}>
+                <h2 className="heading-2">Articles</h2>
+                <span className="label">{others.length}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                {others.map(post => <PostCard key={post.slug} post={post} variant="writing" />)}
               </div>
             </section>
           )}

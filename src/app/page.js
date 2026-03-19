@@ -1,4 +1,5 @@
 import Link             from 'next/link';
+import Image            from 'next/image';
 import { getAllPosts }   from '@/lib/content';
 import { PostCard }      from '@/components/ui/PostCard';
 import { SpotifyWidget } from '@/components/ui/SpotifyWidget';
@@ -59,84 +60,152 @@ export default async function HomePage() {
           pointerEvents: 'none', zIndex: 0, filter: 'blur(60px)',
         }} />
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* Top row: status pill + ambient sound */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
-            marginBottom: 'var(--space-10)', flexWrap: 'wrap',
-            animation: 'fade-up 600ms var(--ease-out) both',
-          }}>
-            {/* Status pill */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 'var(--space-12)',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          {/* Column 1: Text Content */}
+          <div>
+            {/* Top row: status pill + ambient sound */}
             <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
-              fontFamily: 'var(--font-mono)', fontSize: '11px',
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: 'var(--ink-50)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-full)', padding: '5px 14px',
-              background: 'var(--surface-1)',
+              display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
+              marginBottom: 'var(--space-10)', flexWrap: 'wrap',
+              animation: 'fade-up 600ms var(--ease-out) both',
             }}>
-              <span style={{
-                width: '6px', height: '6px', borderRadius: '50%',
-                background: '#22c55e', flexShrink: 0,
-              }} className="status-dot" />
-              Available for work ·{' '}
-              <span style={{ color: 'var(--amber)' }}>{nowData.location}</span>
+              {/* Status pill */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
+                fontFamily: 'var(--font-mono)', fontSize: '11px',
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: 'var(--ink-50)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-full)', padding: '5px 14px',
+                background: 'var(--surface-1)',
+              }}>
+                <span style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: '#22c55e', flexShrink: 0,
+                }} className="status-dot" />
+                Available for work ·{' '}
+                <span style={{ color: 'var(--amber)' }}>{nowData.location}</span>
+              </div>
+
+              {/* Ambient sound toggle */}
+              <AmbientSound />
             </div>
 
-            {/* Ambient sound toggle */}
-            <AmbientSound />
+            {/* Headline */}
+            <h1 className="display-1" style={{
+              marginBottom: 'var(--space-4)',
+              animation: 'fade-up 800ms var(--ease-out) 100ms both',
+            }}>
+              <span style={{ display: 'block' }}>James</span>
+              <span style={{ display: 'block', color: 'var(--ink-30)', position: 'relative' }}>
+                Uchechi
+                <span aria-hidden style={{
+                  position: 'absolute', bottom: '4px', left: 0,
+                  width: '100%', height: '2px',
+                  background: 'linear-gradient(to right, var(--amber) 0%, var(--amber-light) 40%, transparent 100%)',
+                  opacity: 0.5,
+                }} />
+              </span>
+              <span style={{ color: 'var(--amber)' }}>.</span>
+            </h1>
+
+            {/* Typing animation — role cycle */}
+            <div style={{
+              marginBottom: 'var(--space-6)',
+              animation: 'fade-up 700ms var(--ease-out) 160ms both',
+            }}>
+              <TypingAnimation />
+            </div>
+
+            {/* Tagline */}
+            <p className="body-lg" style={{
+              maxWidth: '500px', color: 'var(--ink-50)',
+              marginBottom: 'var(--space-10)',
+              animation: 'fade-up 800ms var(--ease-out) 220ms both', lineHeight: 1.7,
+            }}>
+              I build web apps, data pipelines, and occasionally write about
+              the process.
+            </p>
+
+            {/* CTAs */}
+            <div style={{
+              display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap',
+              alignItems: 'center', marginBottom: 'var(--space-12)',
+              animation: 'fade-up 800ms var(--ease-out) 300ms both',
+            }}>
+              <Link href="/writing"  className="btn-primary">Read my writing ↗</Link>
+              <Link href="/projects" className="btn-ghost">View projects</Link>
+            </div>
+
+            {/* Spotify */}
+            <div style={{ animation: 'fade-up 800ms var(--ease-out) 400ms both' }}>
+              <SpotifyWidget />
+            </div>
           </div>
 
-          {/* Headline */}
-          <h1 className="display-1" style={{
-            marginBottom: 'var(--space-4)', maxWidth: '1000px',
-            animation: 'fade-up 800ms var(--ease-out) 100ms both',
+          {/* Column 2: Profile Picture */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            position: 'relative',
+            animation: 'fade-up 1s var(--ease-out) 200ms both',
           }}>
-            <span style={{ display: 'block' }}>James</span>
-            <span style={{ display: 'block', color: 'var(--ink-30)', position: 'relative' }}>
-              Uchechi
-              <span aria-hidden style={{
-                position: 'absolute', bottom: '4px', left: 0,
-                width: '100%', height: '2px',
-                background: 'linear-gradient(to right, var(--amber) 0%, var(--amber-light) 40%, transparent 100%)',
-                opacity: 0.5,
+            <div style={{ position: 'relative', width: 'min(400px, 90%)', aspectRatio: '1/1' }}>
+              {/* Decorative rings/glow */}
+              <div aria-hidden style={{
+                position: 'absolute', inset: '-20px',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-xl)',
+                opacity: 0.3,
+                maskImage: 'linear-gradient(to bottom, black, transparent)',
               }} />
-            </span>
-            <span style={{ color: 'var(--amber)' }}>.</span>
-          </h1>
+              <div aria-hidden style={{
+                position: 'absolute', inset: '-10px',
+                background: 'radial-gradient(circle at center, var(--amber-subtle), transparent 70%)',
+                opacity: 0.15,
+                filter: 'blur(20px)',
+              }} />
 
-          {/* Typing animation — role cycle */}
-          <div style={{
-            marginBottom: 'var(--space-6)',
-            animation: 'fade-up 700ms var(--ease-out) 160ms both',
-          }}>
-            <TypingAnimation />
-          </div>
+              {/* The Image */}
+              <div style={{
+                position: 'relative',
+                width: '100%', height: '100%',
+                borderRadius: 'var(--radius-xl)',
+                overflow: 'hidden',
+                border: '1px solid var(--border-hover)',
+                boxShadow: 'var(--shadow-xl)',
+                background: 'var(--surface-1)',
+              }}>
+                <Image
+                  src="/jamesuchechi.jpeg"
+                  alt="James Uchechi"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority
+                />
+              </div>
 
-          {/* Tagline */}
-          <p className="body-lg" style={{
-            maxWidth: '500px', color: 'var(--ink-50)',
-            marginBottom: 'var(--space-10)',
-            animation: 'fade-up 800ms var(--ease-out) 220ms both', lineHeight: 1.7,
-          }}>
-            I build web apps, data pipelines, and occasionally write about
-            the process.
-          </p>
-
-          {/* CTAs */}
-          <div style={{
-            display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap',
-            alignItems: 'center', marginBottom: 'var(--space-12)',
-            animation: 'fade-up 800ms var(--ease-out) 300ms both',
-          }}>
-            <Link href="/writing"  className="btn-primary">Read my writing ↗</Link>
-            <Link href="/projects" className="btn-ghost">View projects</Link>
-            <Link href="/now"      className="btn-ghost">What I&apos;m doing now</Link>
-          </div>
-
-          {/* Spotify */}
-          <div style={{ animation: 'fade-up 800ms var(--ease-out) 400ms both' }}>
-            <SpotifyWidget />
+              {/* Floating accent */}
+              <div style={{
+                position: 'absolute', bottom: '-10px', right: '-10px',
+                width: '60px', height: '60px',
+                background: 'var(--surface-2)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: 'var(--shadow-lg)',
+                fontSize: '24px',
+                zIndex: 2,
+              }}>
+                ✦
+              </div>
+            </div>
           </div>
         </div>
 
