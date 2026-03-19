@@ -3,8 +3,8 @@ import { getAllPosts } from './content';
 import { prisma }      from './prisma';
 
 /** Build the search index from all content */
-export function buildSearchIndex() {
-  const writing = getAllPosts('writing').map(p => ({
+export async function buildSearchIndex() {
+  const writing = (await getAllPosts('writing')).map(p => ({
     slug:        p.slug,
     title:       p.title,
     description: p.description || '',
@@ -14,11 +14,12 @@ export function buildSearchIndex() {
     href:        `/writing/${p.slug}`,
   }));
 
-  const garden = getAllPosts('garden').map(p => ({
+  const garden = (await getAllPosts('garden')).map(p => ({
     slug:        p.slug,
     title:       p.title,
     description: p.description || '',
     tags:        (p.tags || []).join(' '),
+    totalDays:   p.totalDays || 0,
     stage:       p.stage || '',
     section:     'garden',
     href:        `/garden/${p.slug}`,
@@ -35,7 +36,7 @@ export function buildSearchIndex() {
 
 /** Build the complete index including DB content */
 export async function getSearchItems() {
-  const { writing, garden, pages } = buildSearchIndex();
+  const { writing, garden, pages } = await buildSearchIndex();
 
   try {
     const projects = (await prisma.project.findMany({ where: { published: true } })).map(p => ({

@@ -11,7 +11,7 @@ function escape(str = '') {
 }
 
 export async function GET() {
-  const posts  = getAllPosts('writing').slice(0, 20);
+  const posts  = (await getAllPosts('writing')).slice(0, 20);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://jamesuchechi.com';
 
   const items = posts.map(post => `
