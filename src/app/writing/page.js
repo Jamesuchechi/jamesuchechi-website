@@ -1,4 +1,5 @@
 import { getAllPosts }           from '@/lib/content';
+export const dynamic = 'force-dynamic';
 import { PostCard }               from '@/components/ui/PostCard';
 import { WritingHeatmap }         from '@/components/ui/WritingHeatmap';
 

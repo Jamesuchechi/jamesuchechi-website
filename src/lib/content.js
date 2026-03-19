@@ -22,7 +22,11 @@ export async function getAllPosts(type = 'writing') {
       readingTime: Math.max(1, Math.ceil(p.content.split(/\s+/).length / 200)),
     }));
   } catch (err) {
-    console.error(`Error fetching posts for ${type}:`, err);
+    console.error(`[Prisma Error] Failed to fetch posts for ${type}:`, {
+      message: err.message,
+      code:    err.code,
+      meta:    err.meta,
+    });
     // Fallback to file system if DB fails (optional)
     return getLocalPosts(type);
   }

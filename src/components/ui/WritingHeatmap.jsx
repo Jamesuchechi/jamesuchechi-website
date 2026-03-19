@@ -1,5 +1,4 @@
-'use client';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 /**
  * WritingHeatmap — GitHub-style calendar showing when posts were published.
@@ -9,6 +8,9 @@ import { useMemo } from 'react';
  *   weeks — how many weeks to show (default 52)
  */
 export function WritingHeatmap({ posts = [], weeks = 52 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const { grid, months, total } = useMemo(() => {
     // Build a set of publish dates → count
     const counts = {};
@@ -69,6 +71,10 @@ export function WritingHeatmap({ posts = [], weeks = 52 }) {
     if (count === 2) return 'rgba(201,146,42,0.60)';
     return 'var(--amber)';
   }
+
+  if (!mounted) return (
+    <div style={{ height: '140px', background: 'var(--surface-2)', borderRadius: 'var(--radius-lg)', opacity: 0.3 }} />
+  );
 
   return (
     <div>
