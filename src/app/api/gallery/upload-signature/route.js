@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 // POST /api/gallery/upload-signature
 // Returns a Cloudinary signed upload signature so the browser can upload directly
-export async function POST() {
+export async function POST(request) {
   try {
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     const apiKey    = process.env.CLOUDINARY_API_KEY;
@@ -16,10 +16,17 @@ export async function POST() {
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
-    const body      = await request.json().catch(() => ({}));
+    
+    let body = {};
+    try {
+      body = await request.json();
+    } catch {
+      // Empty body or malformed JSON
+    }
+    
     const { folder = 'jamesuchechi-uploads' } = body;
 
-    // Build the string to sign
+    // Build the string to sign (alphabetical order: folder, then timestamp)
     const str = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
 
     // SHA-1 via Web Crypto (available in Edge + Node.js 18+)
