@@ -7,7 +7,7 @@ export const metadata = { title: 'Digest Subscribers · Admin' };
 async function getSubscribers() {
   try {
     return await prisma.digestSubscriber.findMany({
-      orderBy: { subscribedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
   } catch { return []; }
 }
@@ -76,7 +76,7 @@ export default async function AdminDigestPage() {
                 {sub.active ? 'Active' : 'Inactive'}
               </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--ink-30)' }}>
-                {format(new Date(sub.subscribedAt), 'MMM d, yyyy')}
+                {format(new Date(sub.createdAt), 'MMM d, yyyy')}
               </span>
             </div>
           ))}
