@@ -5,12 +5,13 @@ import { getPostBySlug, getAllPosts }   from '@/lib/content';
 import { formatDate, isoDate }         from '@/lib/dates';
 
 export async function generateStaticParams() {
-  return getAllPosts('garden').map(p => ({ slug: p.slug }));
+  const posts = await getAllPosts('garden');
+  return posts.map(p => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug, 'garden');
+  const post = await getPostBySlug(slug, 'garden');
   if (!post) return {};
   return {
     title:       post.title,
@@ -26,7 +27,7 @@ const STAGE_CONFIG = {
 
 export default async function GardenPostPage({ params }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug, 'garden');
+  const post = await getPostBySlug(slug, 'garden');
   if (!post) notFound();
 
   const stage = post.stage ? STAGE_CONFIG[post.stage] : null;

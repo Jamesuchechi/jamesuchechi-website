@@ -12,8 +12,8 @@ const STAGE_META = {
   evergreen: { symbol: '🌳', label: 'Evergreen',  desc: 'Stable, settled thinking'  },
 };
 
-export default function GardenPage() {
-  const notes     = getAllPosts('garden');
+export default async function GardenPage() {
+  const notes     = await getAllPosts('garden');
   const seedlings = notes.filter(n => n.stage === 'seedling');
   const budding   = notes.filter(n => n.stage === 'budding');
   const evergreen = notes.filter(n => n.stage === 'evergreen');

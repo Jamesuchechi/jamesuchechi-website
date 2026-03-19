@@ -18,9 +18,9 @@ const MARQUEE_ITEMS = [
   '✦', 'Machine Learning', '✦', 'API Design', '✦', 'Systems Thinking', '✦',
 ];
 
-export default function HomePage() {
-  const allPosts    = getAllPosts('writing');
-  const gardenNotes = getAllPosts('garden');
+export default async function HomePage() {
+  const allPosts    = await getAllPosts('writing');
+  const gardenNotes = await getAllPosts('garden');
   const recentPosts = allPosts.slice(0, 3);
   const featuredPost = recentPosts[0];
   const otherPosts   = recentPosts.slice(1);

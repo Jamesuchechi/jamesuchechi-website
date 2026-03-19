@@ -1,14 +1,34 @@
 import fs   from 'fs';
 import path  from 'node:path';
 import matter from 'gray-matter';
+import { prisma } from '@/lib/prisma';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'src', 'content');
 
 /**
- * Get all posts from a content directory
- * @param {'writing' | 'garden'} dir
+ * Get all posts from the database (or content directory as fallback)
+ * @param {'writing' | 'garden'} type
  */
-export function getAllPosts(dir = 'writing') {
+export async function getAllPosts(type = 'writing') {
+  try {
+    const posts = await prisma.post.findMany({
+      where:   { type, published: true },
+      orderBy: { date: 'desc' },
+    });
+
+    return posts.map(p => ({
+      ...p,
+      date: p.date.toISOString(),
+      readingTime: Math.max(1, Math.ceil(p.content.split(/\s+/).length / 200)),
+    }));
+  } catch (err) {
+    console.error(`Error fetching posts for ${type}:`, err);
+    // Fallback to file system if DB fails (optional)
+    return getLocalPosts(type);
+  }
+}
+
+function getLocalPosts(dir = 'writing') {
   const dirPath = path.join(CONTENT_ROOT, dir);
 
   if (!fs.existsSync(dirPath)) return [];
@@ -41,9 +61,30 @@ export function getAllPosts(dir = 'writing') {
 }
 
 /**
- * Get a single post by slug
+ * Get a single post by slug from the database
  */
-export function getPostBySlug(slug, dir = 'writing') {
+export async function getPostBySlug(slug, type = 'writing') {
+  try {
+    const post = await prisma.post.findUnique({
+      where: { slug, type },
+    });
+
+    if (post) {
+      return {
+        ...post,
+        date: post.date.toISOString(),
+        readingTime: Math.max(1, Math.ceil(post.content.split(/\s+/).length / 200)),
+      };
+    }
+  } catch (err) {
+    console.error(`Error fetching post ${slug}:`, err);
+  }
+
+  // Fallback to file system
+  return getLocalPostBySlug(slug, type);
+}
+
+function getLocalPostBySlug(slug, dir = 'writing') {
   const dirPath  = path.join(CONTENT_ROOT, dir);
   const mdxPath  = path.join(dirPath, `${slug}.mdx`);
   const mdPath   = path.join(dirPath, `${slug}.md`);
@@ -70,8 +111,8 @@ export function getPostBySlug(slug, dir = 'writing') {
 /**
  * Get all unique tags across a content dir
  */
-export function getAllTags(dir = 'writing') {
-  const posts = getAllPosts(dir);
+export async function getAllTags(dir = 'writing') {
+  const posts = await getAllPosts(dir);
   const tagSet = new Set();
   posts.forEach((p) => (p.tags || []).forEach((t) => tagSet.add(t)));
   return Array.from(tagSet).sort();
@@ -80,13 +121,15 @@ export function getAllTags(dir = 'writing') {
 /**
  * Get posts by type (essay | tutorial | til)
  */
-export function getPostsByType(type) {
-  return getAllPosts('writing').filter((p) => p.type === type);
+export async function getPostsByType(type) {
+  const posts = await getAllPosts('writing');
+  return posts.filter((p) => p.type === type);
 }
 
 /**
  * Get garden notes by stage
  */
-export function getGardenByStage(stage) {
-  return getAllPosts('garden').filter((p) => p.stage === stage);
+export async function getGardenByStage(stage) {
+  const posts = await getAllPosts('garden');
+  return posts.filter((p) => p.stage === stage);
 }

@@ -182,3 +182,20 @@ model DigestSubscriber {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ── Posts (Writing / Garden) ─────────────────────────────────
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?  @db.Text
+  content     String   @db.Text
+  type        String   @default("writing") // "writing" | "garden"
+  category    String?  // "essay" | "tutorial" | "til"
+  stage       String?  // "seedling" | "budding" | "evergreen"
+  tags        String[]
+  published   Boolean  @default(true)
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

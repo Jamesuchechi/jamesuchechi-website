@@ -10,12 +10,13 @@ import { RelatedPosts }                from '@/components/ui/RelatedPosts';
 import { DigestSignup }                from '@/components/ui/DigestSignup';
 
 export async function generateStaticParams() {
-  return getAllPosts('writing').map(p => ({ slug: p.slug }));
+  const posts = await getAllPosts('writing');
+  return posts.map(p => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug, 'writing');
+  const post = await getPostBySlug(slug, 'writing');
   if (!post) return {};
   return {
     title:       post.title,
@@ -34,10 +35,10 @@ const TYPE_COLORS = { essay: 'var(--amber)', tutorial: '#60a5fa', til: '#34d399'
 
 export default async function WritingPostPage({ params }) {
   const { slug }    = await params;
-  const post        = getPostBySlug(slug, 'writing');
+  const post        = await getPostBySlug(slug, 'writing');
   if (!post) notFound();
 
-  const allPosts    = getAllPosts('writing');
+  const allPosts    = await getAllPosts('writing');
   const typeColor   = TYPE_COLORS[post.type] || 'var(--amber)';
 
   return (

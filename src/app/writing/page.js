@@ -1,4 +1,4 @@
-import { getAllPosts, getAllTags } from '@/lib/content';
+import { getAllPosts }           from '@/lib/content';
 import { PostCard }               from '@/components/ui/PostCard';
 import { WritingHeatmap }         from '@/components/ui/WritingHeatmap';
 
@@ -7,9 +7,9 @@ export const metadata = {
   description: 'Essays, tutorials, and short notes on engineering, data, and the craft of building things.',
 };
 
-export default function WritingPage() {
-  const posts   = getAllPosts('writing');
-  const tags    = getAllTags('writing');
+export default async function WritingPage() {
+  const posts   = await getAllPosts('writing');
+
   const essays    = posts.filter(p => p.type === 'essay');
   const tutorials = posts.filter(p => p.type === 'tutorial');
   const tils      = posts.filter(p => p.type === 'til');
