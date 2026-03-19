@@ -1,6 +1,7 @@
 'use client';
 import { useState }  from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter }          from 'next/navigation';
+import { SingleImageUploader } from '@/components/ui/SingleImageUploader';
 
 function Field({ label, children, hint }) {
   return (
@@ -128,8 +129,12 @@ export function ProjectForm({ initial, onSave }) {
       </Field>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-6)' }}>
-        <Field label="Cover URL (image)">
-          <input style={inputStyle} type="url" value={form.coverUrl} onChange={e => set('coverUrl', e.target.value)} />
+        <Field label="Cover Image">
+          <SingleImageUploader 
+            value={form.coverUrl} 
+            onChange={url => set('coverUrl', url)} 
+            folder="jamesuchechi-projects"
+          />
         </Field>
         <Field label="Tech Stack" hint="Comma-separated: Next.js, Python, Prisma">
           <input style={inputStyle} value={form.techStack} onChange={e => set('techStack', e.target.value)} />

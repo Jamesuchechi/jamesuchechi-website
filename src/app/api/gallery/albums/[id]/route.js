@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }    from 'next/server';
+import { prisma }          from '@/lib/prisma';
+import { revalidatePath }  from 'next/cache';
 
 // GET /api/gallery/albums/[id]
 export async function GET(_, { params }) {
@@ -35,6 +36,8 @@ export async function PUT(request, { params }) {
         ...(published   !== undefined && { published }),
       },
     });
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
     return NextResponse.json(album);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -47,6 +50,7 @@ export async function DELETE(_, { params }) {
   try {
     const { id } = await params;
     await prisma.galleryAlbum.delete({ where: { id } });
+    revalidatePath('/gallery');
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });

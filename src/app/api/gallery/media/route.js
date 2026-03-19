@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }    from 'next/server';
+import { prisma }          from '@/lib/prisma';
+import { revalidatePath }  from 'next/cache';
 
 // POST /api/gallery/media — save uploaded media item to DB
 export async function POST(request) {
@@ -39,6 +40,8 @@ export async function POST(request) {
       });
     }
 
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
     return NextResponse.json(media, { status: 201 });
   } catch (err) {
     console.error('POST /api/gallery/media error:', err);

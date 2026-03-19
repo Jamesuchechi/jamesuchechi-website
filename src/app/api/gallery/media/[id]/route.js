@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }    from 'next/server';
+import { prisma }          from '@/lib/prisma';
+import { revalidatePath }  from 'next/cache';
 
 // PUT /api/gallery/media/[id] — update caption, location, order
 export async function PUT(request, { params }) {
@@ -17,6 +18,8 @@ export async function PUT(request, { params }) {
         ...(order    !== undefined && { order:    parseInt(order) || 0 }),
       },
     });
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
     return NextResponse.json(media);
   } catch (err) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -67,6 +70,8 @@ export async function DELETE(_, { params }) {
     }
 
     await prisma.galleryMedia.delete({ where: { id } });
+    revalidatePath('/gallery');
+    revalidatePath('/gallery/[slug]', 'page');
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: 'Failed to delete media' }, { status: 500 });

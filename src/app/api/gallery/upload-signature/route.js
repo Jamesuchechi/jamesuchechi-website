@@ -16,7 +16,8 @@ export async function POST() {
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
-    const folder    = 'jamesuchechi-gallery';
+    const body      = await request.json().catch(() => ({}));
+    const { folder = 'jamesuchechi-uploads' } = body;
 
     // Build the string to sign
     const str = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;

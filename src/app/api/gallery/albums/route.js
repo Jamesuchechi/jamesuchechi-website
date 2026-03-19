@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
-import { prisma }       from '@/lib/prisma';
+import { NextResponse }    from 'next/server';
+import { prisma }          from '@/lib/prisma';
+import { revalidatePath }  from 'next/cache';
 
 // POST /api/gallery/albums — create album
 export async function POST(request) {
@@ -23,6 +24,7 @@ export async function POST(request) {
       },
     });
 
+    revalidatePath('/gallery');
     return NextResponse.json(album, { status: 201 });
   } catch (err) {
     console.error('POST /api/gallery/albums error:', err);
