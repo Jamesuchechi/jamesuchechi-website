@@ -161,3 +161,24 @@ model TimelineEntry {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ── Post Reactions ──────────────────────────────────────────
+model PostReaction {
+  id        String   @id @default(cuid())
+  slug      String
+  type      String   // "learned" | "bookmarked" | "thinking"
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@unique([slug, type])
+}
+
+// ── Email Digest Subscribers ─────────────────────────────────
+model DigestSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

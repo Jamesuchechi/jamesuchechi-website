@@ -5,12 +5,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/components/ui/ThemeProvider';
 
 const NAV_LINKS = [
-  { href: '/writing',  label: 'Writing'  },
-  { href: '/projects', label: 'Projects' },
-  { href: '/gallery',  label: 'Gallery'  },
-  { href: '/timeline', label: 'Journey'  },
-  { href: '/garden',   label: 'Garden'   },
-  { href: '/uses',     label: 'Uses'     },
+  { href: '/writing',   label: 'Writing'  },
+  { href: '/projects',  label: 'Projects' },
+  { href: '/gallery',   label: 'Gallery'  },
+  { href: '/timeline',  label: 'Journey'  },
+  { href: '/garden',    label: 'Garden'   },
+  { href: '/uses',      label: 'Uses'     },
 ];
 
 const SECTION_ICONS = {
@@ -19,10 +19,34 @@ const SECTION_ICONS = {
   page:    '→',
 };
 
+function ScrollBar() {
+  const [pct, setPct] = useState(0);
+  useEffect(() => {
+    const fn = () => {
+      const el = document.documentElement;
+      setPct(el.scrollTop / (el.scrollHeight - el.clientHeight) || 0);
+    };
+    window.addEventListener('scroll', fn, { passive: true });
+    return () => window.removeEventListener('scroll', fn);
+  }, []);
+  if (pct <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', bottom: 0, left: 0,
+      height: '1px',
+      width: `${pct * 100}%`,
+      background: 'linear-gradient(to right, var(--amber), var(--amber-light))',
+      transition: 'width 60ms linear',
+      boxShadow: '0 0 6px var(--amber-glow)',
+    }} />
+  );
+}
+
 export function SiteNav() {
-  const pathname          = usePathname();
-  const router            = useRouter();
+  const pathname   = usePathname();
+  const router     = useRouter();
   const { theme, toggle, mounted } = useTheme();
+
   const [scrolled,    setScrolled]    = useState(false);
   const [menuOpen,    setMenuOpen]    = useState(false);
   const [cmdOpen,     setCmdOpen]     = useState(false);
@@ -30,62 +54,48 @@ export function SiteNav() {
   const [results,     setResults]     = useState([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [searching,   setSearching]   = useState(false);
-  const inputRef   = useRef(null);
+
+  const inputRef    = useRef(null);
   const searchTimer = useRef(null);
 
-  // Scroll detection
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 40);
+    const fn = () => setScrolled(window.scrollY > 32);
     window.addEventListener('scroll', fn, { passive: true });
     return () => window.removeEventListener('scroll', fn);
   }, []);
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
-  // Close on route change
   useEffect(() => {
     setCmdOpen(false);
     setMenuOpen(false);
   }, [pathname]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const fn = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setCmdOpen(v => !v);
-      }
-      if (e.key === 'Escape') {
-        setCmdOpen(false);
-        setMenuOpen(false);
-      }
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setCmdOpen(v => !v); }
+      if (e.key === 'Escape') { setCmdOpen(false); setMenuOpen(false); }
     };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, []);
 
-  // Focus input when palette opens
   useEffect(() => {
     if (cmdOpen) {
-      setQuery('');
-      setResults([]);
-      setActiveIndex(-1);
+      setQuery(''); setResults([]); setActiveIndex(-1);
       setTimeout(() => inputRef.current?.focus(), 50);
     }
   }, [cmdOpen]);
 
-  // JamesOS easter egg
   useEffect(() => {
     if (query.toLowerCase().trim() === 'james') {
       window.dispatchEvent(new CustomEvent('jamesOS:open'));
     }
   }, [query]);
 
-  // Debounced search
   const runSearch = useCallback((q) => {
     clearTimeout(searchTimer.current);
     if (!q.trim() || q.length < 2) { setResults([]); return; }
@@ -101,28 +111,15 @@ export function SiteNav() {
     }, 200);
   }, []);
 
-  const handleQueryChange = (e) => {
-    const q = e.target.value;
-    setQuery(q);
-    runSearch(q);
-  };
+  const handleQueryChange = (e) => { const q = e.target.value; setQuery(q); runSearch(q); };
 
-  // Arrow key navigation
   const handleKeyDown = (e) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex(i => Math.min(i + 1, results.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex(i => Math.max(i - 1, -1));
-    } else if (e.key === 'Enter' && activeIndex >= 0) {
-      router.push(results[activeIndex].href);
-      setCmdOpen(false);
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIndex(i => Math.min(i + 1, results.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(i => Math.max(i - 1, -1)); }
+    else if (e.key === 'Enter' && activeIndex >= 0) { router.push(results[activeIndex].href); setCmdOpen(false); }
   };
 
-  const isActive = (href) =>
-    href === '/' ? pathname === '/' : pathname.startsWith(href);
+  const isActive = (href) => href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
     <>
@@ -135,17 +132,28 @@ export function SiteNav() {
         justifyContent: 'space-between',
         padding:        '0 var(--space-6)',
         height:         '56px',
-        background:     scrolled ? 'color-mix(in srgb, var(--surface-0) 88%, transparent)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        background:     scrolled
+          ? 'color-mix(in srgb, var(--surface-glass) 92%, transparent)'
+          : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
         borderBottom:   scrolled ? '1px solid var(--border)' : '1px solid transparent',
         transition:     'all var(--duration-base) var(--ease-out)',
+        overflow:       'hidden',
       }}>
         {/* Wordmark */}
         <Link href="/" style={{
-          fontFamily: 'var(--font-display)', fontSize: '20px',
-          fontWeight: '400', letterSpacing: '-0.02em',
-          color: 'var(--ink)', lineHeight: 1, textDecoration: 'none',
-        }}>
+          fontFamily:    'var(--font-display)',
+          fontSize:      '22px',
+          fontWeight:    '400',
+          letterSpacing: '-0.02em',
+          color:         'var(--ink)',
+          lineHeight:    1,
+          textDecoration: 'none',
+          transition:    'opacity var(--duration-fast)',
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.7'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+        >
           JU<span style={{ color: 'var(--amber)' }}>.</span>
         </Link>
 
@@ -157,30 +165,33 @@ export function SiteNav() {
               href={href}
               style={{
                 fontFamily:    'var(--font-mono)',
-                fontSize:      '12px',
-                letterSpacing: '0.06em',
-                color:         isActive(href) ? 'var(--ink)' : 'var(--ink-50)',
+                fontSize:      '11px',
+                letterSpacing: '0.07em',
+                color:         isActive(href) ? 'var(--ink)' : 'var(--ink-40)',
                 textDecoration: 'none',
                 transition:    'color var(--duration-fast)',
                 position:      'relative',
                 textTransform: 'lowercase',
+                padding:       '4px 0',
               }}
             >
-              {isActive(href) && (
-                <span style={{
-                  position: 'absolute', bottom: '-2px',
-                  left: 0, right: 0, height: '1px',
-                  background: 'var(--amber)',
-                }} />
-              )}
               {label}
+              {/* Active underline */}
+              <span style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                height: '1px',
+                background: 'var(--amber)',
+                transform: isActive(href) ? 'scaleX(1)' : 'scaleX(0)',
+                transformOrigin: 'left',
+                transition: 'transform var(--duration-base) var(--ease-out)',
+                boxShadow: '0 0 4px var(--amber-glow)',
+              }} />
             </Link>
           ))}
         </nav>
 
         {/* Right controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-          {/* ⌘K trigger */}
           <button
             onClick={() => setCmdOpen(true)}
             className="cmd-trigger"
@@ -190,7 +201,6 @@ export function SiteNav() {
             <span>⌘K</span>
           </button>
 
-          {/* Theme toggle */}
           {mounted && (
             <button
               onClick={toggle}
@@ -201,7 +211,6 @@ export function SiteNav() {
             </button>
           )}
 
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(v => !v)}
             aria-label="Menu"
@@ -217,9 +226,12 @@ export function SiteNav() {
             {menuOpen ? '✕' : '☰'}
           </button>
         </div>
+
+        {/* Scroll progress bar */}
+        <ScrollBar />
       </header>
 
-      {/* ── MOBILE MENU ────────────────────────────────────── */}
+      {/* ── MOBILE MENU ─────────────────────────────────── */}
       {menuOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 99,
@@ -237,8 +249,8 @@ export function SiteNav() {
             }}
           >✕</button>
 
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {[{ href: '/', label: 'Home' }, ...NAV_LINKS].map(({ href, label }) => (
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+            {[{ href: '/', label: 'Home' }, ...NAV_LINKS].map(({ href, label }, i) => (
               <Link
                 key={href}
                 href={href}
@@ -251,29 +263,37 @@ export function SiteNav() {
                   lineHeight:    1.1,
                   color:         isActive(href) ? 'var(--ink)' : 'var(--ink-30)',
                   textDecoration: 'none',
+                  display:       'flex',
+                  alignItems:    'center',
+                  gap:           'var(--space-3)',
+                  animation:     `fade-up 400ms var(--ease-out) ${i * 50}ms both`,
+                  transition:    'color var(--duration-fast)',
                 }}
-              >{label}</Link>
+              >
+                {isActive(href) && (
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--amber)', flexShrink: 0 }} />
+                )}
+                {label}
+              </Link>
             ))}
           </nav>
 
-          <div style={{ marginTop: 'auto', paddingTop: 'var(--space-12)' }}>
-            <p style={{
-              fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-30)',
-            }}>
+          <div style={{ marginTop: 'auto', paddingTop: 'var(--space-12)', animation: 'fade-up 400ms var(--ease-out) 350ms both' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-30)' }}>
               okparajamesuchechi@gmail.com
             </p>
           </div>
         </div>
       )}
 
-      {/* ── COMMAND PALETTE ────────────────────────────────── */}
+      {/* ── COMMAND PALETTE ─────────────────────────────── */}
       {cmdOpen && (
         <div
           onClick={(e) => { if (e.target === e.currentTarget) setCmdOpen(false); }}
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
-            background: 'rgba(0,0,0,0.4)',
-            backdropFilter: 'blur(4px)',
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'flex-start',
             justifyContent: 'center',
             paddingTop: 'clamp(60px, 15vh, 160px)',
@@ -286,7 +306,8 @@ export function SiteNav() {
             border: '1px solid var(--border-hover)',
             borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
+            boxShadow: 'var(--shadow-xl)',
+            animation: 'scale-in 200ms var(--ease-out)',
           }}>
             {/* Input row */}
             <div style={{
@@ -319,7 +340,6 @@ export function SiteNav() {
 
             {/* Results */}
             <div style={{ padding: 'var(--space-2)', maxHeight: '360px', overflowY: 'auto' }}>
-              {/* Search results */}
               {results.length > 0 ? (
                 <>
                   <p style={{
@@ -327,125 +347,69 @@ export function SiteNav() {
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: 'var(--ink-30)', padding: 'var(--space-2) var(--space-4)',
                     marginBottom: 'var(--space-1)',
-                  }}>
-                    Results
-                  </p>
+                  }}>Results</p>
                   {results.map((item, i) => (
                     <Link
                       key={item.href}
                       href={item.href}
                       onClick={() => setCmdOpen(false)}
                       className="cmd-item"
-                      style={{
-                        background: i === activeIndex ? 'var(--surface-1)' : 'transparent',
-                      }}
+                      style={{ background: i === activeIndex ? 'var(--surface-1)' : 'transparent' }}
                     >
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '12px',
-                        color: 'var(--ink-30)', width: '16px', flexShrink: 0,
-                        textAlign: 'center',
-                      }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-30)', width: '16px', flexShrink: 0, textAlign: 'center' }}>
                         {SECTION_ICONS[item.section] || '→'}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: '14px', color: 'var(--ink)', lineHeight: 1.3 }}>
-                          {item.title}
-                        </p>
+                        <p style={{ fontSize: '14px', color: 'var(--ink)', lineHeight: 1.3 }}>{item.title}</p>
                         {item.description && (
-                          <p style={{
-                            fontSize: '12px', color: 'var(--ink-30)',
-                            overflow: 'hidden', textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap', marginTop: '2px',
-                          }}>
+                          <p style={{ fontSize: '12px', color: 'var(--ink-30)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginTop: '2px' }}>
                             {item.description}
                           </p>
                         )}
                       </div>
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '10px',
-                        color: 'var(--ink-30)', letterSpacing: '0.06em',
-                        textTransform: 'uppercase', flexShrink: 0,
-                      }}>
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-30)', letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
                         {item.section}
                       </span>
                     </Link>
                   ))}
                 </>
               ) : query.length >= 2 && !searching ? (
-                <p style={{
-                  padding: 'var(--space-6)', textAlign: 'center',
-                  fontFamily: 'var(--font-mono)', fontSize: '12px',
-                  color: 'var(--ink-30)',
-                }}>
-                  No results for "{query}"
+                <p style={{ padding: 'var(--space-6)', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--ink-30)' }}>
+                  No results for &ldquo;{query}&rdquo;
                 </p>
               ) : !query && (
-                /* Default quick links when no query */
                 <>
                   <p style={{
                     fontFamily: 'var(--font-mono)', fontSize: '10px',
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: 'var(--ink-30)', padding: 'var(--space-2) var(--space-4)',
-                    marginBottom: 'var(--space-1)',
+                    color: 'var(--ink-30)', padding: 'var(--space-2) var(--space-4)', marginBottom: 'var(--space-1)',
                   }}>Quick links</p>
                   {[...NAV_LINKS, { href: '/r', label: 'Resume' }].map(({ href, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      onClick={() => setCmdOpen(false)}
-                      className="cmd-item"
-                    >
-                      <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: '12px',
-                        color: 'var(--ink-30)', flexShrink: 0,
-                      }}>→</span>
+                    <Link key={href} href={href} onClick={() => setCmdOpen(false)} className="cmd-item">
+                      <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--amber)', flexShrink: 0 }}>→</span>
                       <span style={{ fontSize: '14px' }}>{label}</span>
                     </Link>
                   ))}
-                  <div style={{
-                    borderTop: '1px solid var(--border)',
-                    margin: 'var(--space-2) var(--space-2) 0',
-                    padding: 'var(--space-3) var(--space-2) var(--space-1)',
-                  }}>
-                    <p style={{
-                      fontFamily: 'var(--font-mono)', fontSize: '10px',
-                      color: 'var(--ink-30)', letterSpacing: '0.08em',
-                    }}>
-                      Tip: type "james" for a surprise ✦
+                  <div style={{ borderTop: '1px solid var(--border)', margin: 'var(--space-2) var(--space-2) 0', padding: 'var(--space-3) var(--space-2) var(--space-1)' }}>
+                    <p style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-30)', letterSpacing: '0.08em' }}>
+                      Tip: type &ldquo;james&rdquo; for a surprise ✦
                     </p>
                   </div>
                 </>
               )}
-
-              {/* JamesOS easter egg */}
               {query.toLowerCase().trim() === 'james' && (
-                <div style={{
-                  padding: 'var(--space-4)', textAlign: 'center',
-                  fontFamily: 'var(--font-mono)', fontSize: '11px',
-                  color: 'var(--amber)', letterSpacing: '0.1em',
-                }}>
+                <div style={{ padding: 'var(--space-4)', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--amber)', letterSpacing: '0.1em' }}>
                   ✦ Launching James Ecosystem…
                 </div>
               )}
             </div>
 
             {/* Footer hint */}
-            <div style={{
-              borderTop: '1px solid var(--border)',
-              padding: 'var(--space-3) var(--space-5)',
-              display: 'flex', gap: 'var(--space-5)',
-            }}>
+            <div style={{ borderTop: '1px solid var(--border)', padding: 'var(--space-3) var(--space-5)', display: 'flex', gap: 'var(--space-5)' }}>
               {[['↑↓', 'navigate'], ['↵', 'open'], ['esc', 'close']].map(([key, label]) => (
                 <span key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                  <kbd style={{
-                    fontFamily: 'var(--font-mono)', fontSize: '10px',
-                    color: 'var(--ink-50)', border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)', padding: '1px 5px',
-                    background: 'var(--surface-1)',
-                  }}>{key}</kbd>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-30)' }}>
-                    {label}
-                  </span>
+                  <kbd style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-50)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '1px 5px', background: 'var(--surface-1)' }}>{key}</kbd>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--ink-30)' }}>{label}</span>
                 </span>
               ))}
             </div>
@@ -457,9 +421,12 @@ export function SiteNav() {
         .nav-desktop { display: flex; }
         .nav-hamburger { display: none !important; }
         @media (max-width: 640px) {
-          .nav-desktop { display: none !important; }
+          .nav-desktop   { display: none !important; }
           .nav-hamburger { display: flex !important; }
         }
+        /* Remove ink-40 which wasn't in original vars */
+        [style*="var(--ink-40)"] { color: rgba(13,13,11,0.4); }
+        [data-theme="dark"] [style*="var(--ink-40)"] { color: rgba(240,237,230,0.4); }
       `}</style>
     </>
   );

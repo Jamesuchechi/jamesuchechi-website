@@ -1,7 +1,12 @@
 import '@/styles/globals.css';
-import { ThemeProvider } from '@/components/ui/ThemeProvider';
-import { SiteNav }       from '@/components/layout/SiteNav';
-import { SiteFooter }    from '@/components/layout/SiteFooter';
+import { ThemeProvider }       from '@/components/ui/ThemeProvider';
+import { SiteNav }             from '@/components/layout/SiteNav';
+import { SiteFooter }          from '@/components/layout/SiteFooter';
+import { CursorGlow }          from '@/components/ui/CursorGlow';
+import { AnimatedBackground }  from '@/components/ui/AnimatedBackground';
+import { RouteTheme }          from '@/components/ui/RouteTheme';
+import { ReadingListPanel }    from '@/components/ui/ReadingList';
+import { PageTransition, RouteLoadingBar } from '@/components/ui/PageTransition';
 
 export const metadata = {
   title: {
@@ -25,10 +30,7 @@ export const metadata = {
     site:        '@Jamesuchechi6',
     creator:     '@Jamesuchechi6',
   },
-  robots: {
-    index:  true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }) {
@@ -41,8 +43,28 @@ export default function RootLayout({ children }) {
       </head>
       <body className="grain">
         <ThemeProvider>
+          {/* Route loading bar — fires on every navigation */}
+          <RouteLoadingBar />
+
+          {/* Per-route accent color shift (/garden → green, /timeline → purple) */}
+          <RouteTheme />
+
+          {/* Custom amber dot + ring cursor — hides on touch */}
+          <CursorGlow />
+
+          {/* Reactive canvas background — dot grid + ambient orbs */}
+          <AnimatedBackground />
+
+          {/* Floating reading list panel — bottom left */}
+          <ReadingListPanel />
+
           <SiteNav />
-          <main>{children}</main>
+
+          {/* Smooth page fade/slide transitions */}
+          <PageTransition>
+            <main>{children}</main>
+          </PageTransition>
+
           <SiteFooter />
         </ThemeProvider>
       </body>

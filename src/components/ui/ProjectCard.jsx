@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TiltCard } from '@/components/ui/TiltCard';
 
 const CATEGORY_LABELS = {
   web:   'Web',
@@ -9,14 +10,22 @@ const CATEGORY_LABELS = {
 
 export function ProjectCard({ project, featured = false }) {
   return (
-    <div className={`project-card${featured ? ' project-card--featured' : ''}`}>
-      {/* Top amber bar for featured */}
-      {featured && (
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0,
-          height: '2px', background: 'var(--amber)',
-        }} />
-      )}
+    <TiltCard
+      intensity={featured ? 5 : 9}
+      scale={1.02}
+      className={`project-card${featured ? ' project-card--featured' : ''}`}
+    >
+      {/* Top shimmer bar — animates in on hover via CSS */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: '2px',
+        background: 'linear-gradient(90deg, var(--amber), var(--amber-light), var(--amber))',
+        backgroundSize: '200% auto',
+        transform: 'scaleX(0)',
+        transformOrigin: 'left',
+        transition: 'transform var(--duration-base) var(--ease-out)',
+        animation: 'none',
+      }} className="project-card__bar" />
 
       {/* Cover */}
       <div className="project-card__cover">
@@ -26,11 +35,14 @@ export function ProjectCard({ project, featured = false }) {
         ) : (
           <div className="project-card__cover-placeholder">
             <span style={{
-              fontFamily: 'var(--font-mono)', fontSize: '11px',
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: 'var(--amber)', opacity: 0.6,
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(28px, 5vw, 44px)',
+              fontWeight: '300',
+              letterSpacing: '-0.02em',
+              color: 'var(--amber)',
+              opacity: 0.4,
             }}>
-              {project.category}
+              {project.title[0]}
             </span>
           </div>
         )}
@@ -43,9 +55,7 @@ export function ProjectCard({ project, featured = false }) {
           <span className="tag tag--amber">
             {CATEGORY_LABELS[project.category] || project.category}
           </span>
-          {project.featured && (
-            <span className="tag" style={{ color: 'var(--ink-50)' }}>Featured</span>
-          )}
+          {project.featured && <span className="tag">Featured</span>}
           {project.builtAt && (
             <time style={{
               fontFamily: 'var(--font-mono)', fontSize: '11px',
@@ -79,13 +89,11 @@ export function ProjectCard({ project, featured = false }) {
           {project.summary}
         </p>
 
-        {/* Tech stack pills */}
+        {/* Tech stack */}
         {project.techStack?.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
             {project.techStack.slice(0, 5).map(tech => (
-              <span key={tech} className="tag">
-                {tech}
-              </span>
+              <span key={tech} className="tag">{tech}</span>
             ))}
           </div>
         )}
@@ -93,30 +101,19 @@ export function ProjectCard({ project, featured = false }) {
         {/* Links */}
         <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'auto', paddingTop: 'var(--space-2)' }}>
           {project.liveUrl && (
-            <a
-              href={project.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="amber-link"
-              onClick={e => e.stopPropagation()}
-            >
+            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer"
+              className="amber-link" onClick={e => e.stopPropagation()}>
               Live ↗
             </a>
           )}
           {project.githubUrl && (
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="amber-link"
-              style={{ color: 'var(--ink-30)' }}
-              onClick={e => e.stopPropagation()}
-            >
+            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer"
+              className="amber-link" style={{ color: 'var(--ink-30)' }} onClick={e => e.stopPropagation()}>
               GitHub ↗
             </a>
           )}
         </div>
       </div>
-    </div>
+    </TiltCard>
   );
 }

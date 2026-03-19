@@ -8,20 +8,18 @@ export const contentType = 'image/png';
 
 export default async function OgImage({ params }) {
   const { slug } = await params;
-  const post     = getPostBySlug(slug, 'writing');
+  const post     = getPostBySlug(slug, 'garden');
 
   const title       = post?.title       || slug.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
   const description = post?.description || '';
-  const type        = post?.type === 'tutorial' ? 'TUTORIAL' : post?.type === 'til' ? 'TIL' : 'ESSAY';
   const date        = post?.date ? formatDate(post.date, { month: 'short', year: 'numeric' }) : '';
-  const readingTime = post?.readingTime ? String(post.readingTime) : '';
+  const stage       = post?.stage ? post.stage.charAt(0).toUpperCase() + post.stage.slice(1) : 'GARDEN';
 
   const url = new URL('/api/og', 'https://jamesuchechi.com');
   url.searchParams.set('title',       title);
-  url.searchParams.set('type',        type);
+  url.searchParams.set('type',        stage);
   url.searchParams.set('description', description);
   url.searchParams.set('date',        date);
-  url.searchParams.set('readingTime', readingTime);
 
   return redirect(url.toString());
 }
