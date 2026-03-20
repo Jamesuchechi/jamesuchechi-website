@@ -186,25 +186,11 @@ export default async function HomePage() {
                   src="/jamesuchechi.jpeg"
                   alt="James Uchechi"
                   fill
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'cover', objectPosition: 'top' }}
                   priority
                 />
               </div>
 
-              {/* Floating accent */}
-              <div style={{
-                position: 'absolute', bottom: '-10px', right: '-10px',
-                width: '60px', height: '60px',
-                background: 'var(--surface-2)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: 'var(--shadow-lg)',
-                fontSize: '24px',
-                zIndex: 2,
-              }}>
-                ✦
-              </div>
             </div>
           </div>
         </div>
